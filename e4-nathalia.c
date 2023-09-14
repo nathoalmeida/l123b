@@ -1,4 +1,3 @@
-/// meus comentários com ///
 // l123b - e4
 // exercício 4 - conversões de sistema
 // nathália oliveira de almeida
@@ -24,8 +23,8 @@ void converter_decimal(int valor);
 // função que seleciona qual conversao será feita
 void selecionar_valor(int valor, int sis);
 
-void imprime_digito(int digito) {
-/// faltou indentar
+void imprime_digito(int digito) 
+{
   if (digito <= 9) {
     putchar(digito + '0');
   } else {
@@ -33,8 +32,8 @@ void imprime_digito(int digito) {
   }
 }
 
-void converter_hexadecimal(int valor) {
-/// pedia indentação de 2 espaços
+void converter_hexadecimal(int valor) 
+{
   int d1 = valor / 16;
   int d2 = valor % 16;
 
@@ -42,8 +41,8 @@ void converter_hexadecimal(int valor) {
   imprime_digito(d2);
 }
 
-void converter_binario(int valor) {
-
+void converter_binario(int valor) 
+{
   int d1 = (valor / 2) / 2 / 2 / 2 / 2 / 2 / 2 % 2;
   int d2 = (valor / 2) / 2 / 2 / 2 / 2 / 2 % 2;
   int d3 = (valor / 2) / 2 / 2 / 2 / 2 % 2;
@@ -63,8 +62,8 @@ void converter_binario(int valor) {
   imprime_digito(d8);
 }
 
-void converter_octal(int valor) {
-
+void converter_octal(int valor) 
+{
   int d1, d2, d3;
 
   d1 = valor / 8 / 8;
@@ -76,8 +75,8 @@ void converter_octal(int valor) {
   imprime_digito(d3);
 }
 
-void converter_decimal(int valor) {
-
+void converter_decimal(int valor) 
+{
   int d1, d2, d3;
 
   d1 = valor / 100;
@@ -89,12 +88,10 @@ void converter_decimal(int valor) {
   imprime_digito(d3);
 }
 
-void selecionar_valor(int valor, int sis) {
-
+void selecionar_valor(int valor, int sis) 
+{
   if (sis == 'h') {
-/// pedia para colocar o '{' assim: "if (sis == 'h') {"
     converter_hexadecimal(valor);
-/// e assim:   "} else if (sis == 'b') {"
   } else if (sis == 'b') {
       converter_binario(valor);
   } else if (sis == 'd') {
@@ -104,8 +101,6 @@ void selecionar_valor(int valor, int sis) {
   } else {
       printf("Valor inválido");
   }
-/// em uma seleção múltipla, é bom sempre garantir que um dos ramos será executado, terminando
-///   com um else sem if
 }
 
 int main()
@@ -115,7 +110,6 @@ int main()
   scanf("%d", &numero);
 
   if (numero < 0) {
-/// nos exemplos, tinha um \n no final
       printf("Muito pequeno\n");
   } else if (numero > 255) {
       printf("Muito grande\n");
@@ -130,7 +124,6 @@ int main()
       printf("     ");
       selecionar_valor(numero, 'h');
       printf("\n");
-/// nos exemplos, tinha um \n no final
   }
 
   return 0;
