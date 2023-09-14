@@ -1,27 +1,28 @@
 // l123b
 // 14-09-2023
-// A soma dos divisores dá ele mesmo
+// nathália oliveira de almeida
 
 #include <stdio.h>
 #include <stdbool.h>
+
 // Retorna se um valor é perfeito ou não
 bool ehPerfeito(int numero);
 
 // Função que encontra o maior perfeito menor do que o valor fornecido
-int maiorPerfeito(int valor);
+int maiorPerfeito(int numero);
 
 bool ehPerfeito(int numero) 
 {
-  int incrementa = 0;
+  int soma = 0;
   for(int i = numero-1; i > 0; i--) {
     if(numero % i == 0) {
-      incrementa = incrementa + i;  
+      soma += i;  
     } else {
         continue;
     }
   }
 
-  if(incrementa == numero) {
+  if(soma == numero) {
     return true;
   } else {
     return false;
@@ -29,9 +30,9 @@ bool ehPerfeito(int numero)
 
 }
 
-int maiorPerfeito(int valor) 
+int maiorPerfeito(int numero) 
 {
-  for(int i = valor-1; i > 0; i--) {
+  for(int i = numero-1; i > 0; i--) {
     if(ehPerfeito(i)) {
         return i;
         break;
