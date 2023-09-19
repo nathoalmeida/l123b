@@ -22,24 +22,18 @@ bool ehPerfeito(int numero)
     }
   }
 
-  if(soma == numero) {
-    return true;
-  } else {
-    return false;
-  }
-
+  return soma == numero;
 }
 
 int maiorPerfeito(int numero) 
 {
-  for(int i = numero-1; i > 0; i--) {
+  int i;
+  for(i = numero-1; i > 0; i--) {
     if(ehPerfeito(i)) {
-        return i;
-        break;
-    } else {
-        continue;
-    };
+      break;
+    } 
   }
+  return i;
 }
 
 int main() 
