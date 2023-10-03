@@ -17,19 +17,25 @@ void trianguloTipo3(int numero);
 // forma o primeiro exemplo de losango
 void losangoTipo1();
 
-void trianguloTipo1(int numero)
+void imprimeAsterisco(int numero) 
 {
-  if(numero == 4) {
-    for(int i = 0; i < 10; i++) {
-      printf("* ");
-        if(i == 0 || i == 2 || i == 5 || i == 9) {
-          printf("\n");
-      }
-    }
-  } else {
-      printf("Argumento inválido");
+  do {
+    printf("*");  
+    numero--;
+  } while(numero > 0);
+}
+
+void imprimeTriangulo1(int numero) 
+{
+  for(int i = 0; i < numero; i++) {
+    imprimeAsterisco(i+1);
+    printf("\n");
   }
 }
+
+//escreveLinha(l,n) (o número total de linhas e a linha que se está)
+// segundo losango (l-2*2 + 1) pra calcular o número de espaços
+
 
 void trianguloTipo2(int numero) 
 {
@@ -92,13 +98,7 @@ void losangoTipo1()
 
 int main()
 {
-    trianguloTipo1(4);
-    printf("\n");
-    trianguloTipo2(4);
-    printf("\n");
-    trianguloTipo3(4);
-    printf("\n");
-    losangoTipo1();
+   imprimeTriangulo1(5);
 }
 
 
