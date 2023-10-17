@@ -31,7 +31,6 @@ void imprime_stri(char v[])
   for(int i = 0; v[i] != '\0'; i++) {
     putchar(v[i]);
   }
-  
 }
 
 int main() {
