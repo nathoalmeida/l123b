@@ -18,9 +18,9 @@
 
 // funções a implementar
 // retorna a posição de n em v[t], ou -1
-int acha_letra(int t, char v[t], char n);
-// remove o dado na posição p de v[t], deslocando os v[>t]
-void remove_pos(int t, char v[t], int p);
+int acha_letra(int l, char v[l][l], char n);
+// remove o dado na posição p de v[p][i], deslocando os v[<i]
+void remove_pos(int lc, char v[lc][lc], int p);
 
 // funções auxiliares
 // apresenta o programa
@@ -32,11 +32,13 @@ void jogo();
 // verifica a vontade do jogador
 bool quer_jogar_de_novo();
 // preenche v[t] com números
-void preenche_vet(char t, char v[t]);
+void preenche_vet(int l, int c, char v[l][c]);
 // mostra o vetor de números
-void mostra_vet(int t, char v[t]);
+void mostra_vet(int l, int c, char v[l][c]);
 // limpa a linha de entrada
 void espera_enter();
+// gera uma letra aleatória
+int aleatorio(int min, int max);
 
 
 int main()
@@ -57,8 +59,8 @@ void jogo()
 {
   // inicializa o vetor de números a digitar
   int n_num = N_NUM;
-  char letras[N_NUM];
-  preenche_vet(n_num, letras);
+  char letras[N_NUM][N_NUM];
+  preenche_vet(n_num, n_num, letras);
 
   // inicializa timer
   long t0 = time(0);
@@ -75,18 +77,18 @@ void jogo()
       break;
     }
 
-    mostra_vet(n_num, letras);
+    mostra_vet(n_num, n_num, letras);
     printf("você tem %d segundos\n", resta);
-    printf("digite um dos números ");
+    printf("digite uma das letras");
     char num;
     scanf("%c", &num);
     espera_enter();
     int pos = acha_letra(n_num, letras, num);
     if (pos < 0) {
-      printf("Letra %d não encontrada\n", num);
+      printf("Letra %c não encontrada\n", num);
     } else {
       remove_pos(n_num, letras, pos);
-      n_num--;
+      n_num--; // TÁ AQUI O PULO DO GATO
     }
   }
 }
@@ -100,7 +102,7 @@ void espera_enter()
 
 void apresentacao()
 {
-  printf("Você deve digitar as letras que aparecerão na tela.\n");
+  printf("Você deve digitar os números que aparecerão na tela.\n");
   printf("A ordem não é importante.\n");
   printf("Tecle <enter> para iniciar. ");
   espera_enter();
@@ -128,28 +130,35 @@ bool quer_jogar_de_novo()
   }
 }
 
-void preenche_vet(char t, char v[t])
+void preenche_vet(int l, int c, char v[l][c])
 {
-  for (int i = 0; i < t; i++) {
+  for (int i = 0; i < l; i++) {
     // gera um número aleatório entre 0 e 999
-    v[i] = 'a' + (rand() % 26);
+    for (int j = 0; j < c; j++) {
+      v[i][j] = aleatorio('a', 'z');
+    }
   } 
 }
 
-void mostra_vet(int t, char v[t])
+void mostra_vet(int l, int c, char v[l][c])
 {
   printf("\n[");
-  for (int i = 0; i < t; i++) {
-    printf(" %c", v[i]);
+  for (int i = 0; i < l; i++) {
+    for(int j = 0; j < c; j++) {
+      printf("%c", v[i][j]);
+    }
+    if(i != l-1) {
+      printf("\n");
+    }
   }
   printf(" ]\n\n");
 }
 
-int acha_letra(int t, char v[t], char n)
+int acha_letra(int t, char v[t][t], char n)
 {
   /// você deve alterar abaixo desta linha
   for(int i = 0; i < t; i++) {
-    if(n == v[i]) {
+    if(n == v[i][0]) {
       return i;
     } else {
         if(i == t-1) {
@@ -160,15 +169,17 @@ int acha_letra(int t, char v[t], char n)
   /// você deve alterar acima desta linha  
 }
 
-void remove_pos(int t, char v[t], int p)
+void remove_pos(int lc, char v[lc][lc], int p) 
 {
   /// você deve alterar abaixo desta linha
-  int reserva = v[p];
-
-    for(int i = p; i < t-1; i++) {
-      v[i] = v[i+1];
+    for(int i = 0; i < lc; i++) {
+      v[p][i] = v[p][i+1]; 
     }
-    
-  v[t-1] = reserva;
   /// você deve alterar acima desta linha  
 }
+
+int aleatorio(int min, int max)
+{
+  int r = rand() % (max - min + 1);
+  return r + min;
+};
