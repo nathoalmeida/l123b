@@ -9,18 +9,25 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include "tecla.h"
 
 // definições de constantes
-// quantos números gerar
-#define N_NUM 10
+// quantas palavras gerar
+#define NUM_PALAVRAS 10
+// quantas letras tem cada palavra
+#define NUM_LETRAS 10
 // quantos segundos para digitar
-#define TEMPO 20
+#define TEMPO 180
 
 // funções a implementar
 // retorna a posição de n em v[t], ou -1
-int acha_letra(int l, char v[l][l], char n);
+int seleciona_palavra(int t, char v[t][t], char letra);
+// imprime a palavra selecionada no fim da matriz
+void imprime_palavra(int p, int t, char v[t][t]);
+// exclui a palavra caso o jogador tenha acertado todas as letras
+void exclui_palavra(int posicao, char v[NUM_PALAVRAS][NUM_LETRAS]);
 // remove o dado na posição p de v[p][i], deslocando os v[<i]
-void remove_pos(int lc, char v[lc][lc], int p);
+void remove_pos(int p, int t, char v[t][t], char letra);
 
 // funções auxiliares
 // apresenta o programa
@@ -34,7 +41,7 @@ bool quer_jogar_de_novo();
 // preenche v[t] com números
 void preenche_vet(int l, int c, char v[l][c]);
 // mostra o vetor de números
-void mostra_vet(int l, int c, char v[l][c]);
+void mostra_vet(int palavra, int l, int c, char v[l][c]);
 // limpa a linha de entrada
 void espera_enter();
 // gera uma letra aleatória
@@ -43,6 +50,8 @@ int aleatorio(int min, int max);
 
 int main()
 {
+  tecla_ini();
+
   // inicializa o gerador de números aleatórios
   srand(time(0));
 
@@ -53,15 +62,20 @@ int main()
   } while(quer_jogar_de_novo());
 
   encerramento();
+
+  tecla_fim();
 }
 
 void jogo()
 {
   // inicializa o vetor de números a digitar
-  int n_num = N_NUM;
-  char letras[N_NUM][N_NUM];
-  preenche_vet(n_num, n_num, letras);
-
+  int num_palavras = NUM_PALAVRAS;
+  int num_letras = NUM_LETRAS;
+  char letras[num_palavras][num_letras];
+  int palavra_selecionada = -2;
+  int palavras_acertadas = 0;
+  preenche_vet(num_palavras, num_letras, letras);
+  
   // inicializa timer
   long t0 = time(0);
 
@@ -72,25 +86,39 @@ void jogo()
       break;
     }
 
-    if (n_num <= 0) {
+    if (palavras_acertadas == NUM_PALAVRAS) { // DEFINIR CONDIÇÃO DE PARADA
       printf("Parabéns, você acertou todas, e sobraram %d segundos!\n", resta);
       break;
     }
 
-    mostra_vet(n_num, n_num, letras);
+    mostra_vet(palavra_selecionada, num_letras, num_palavras, letras);
+    if (palavra_selecionada >= 0) {
+      imprime_palavra(palavra_selecionada, num_letras, letras);
+    }
     printf("você tem %d segundos\n", resta);
     printf("digite uma das letras");
-    char num;
-    scanf("%c", &num);
-    espera_enter();
-    int pos = acha_letra(n_num, letras, num);
-    if (pos < 0) {
-      printf("Letra %c não encontrada\n", num);
-    } else {
-      remove_pos(n_num, letras, pos);
-      n_num--; // TÁ AQUI O PULO DO GATO
+    char letra;
+    letra = tecla_le_char();
+
+    if (letra != '\0') {
+      if (palavra_selecionada == -2) {
+        palavra_selecionada = seleciona_palavra(num_letras, letras, letra);
+      }
+
+      if (palavra_selecionada == -1) {
+        printf("Letra %c não encontrada\n", letra);
+      } else {
+          remove_pos(palavra_selecionada, num_letras, letras, letra);
+        }
+
+      if (letras[palavra_selecionada][0] == '\0') {
+        exclui_palavra(palavra_selecionada, letras);
+        palavra_selecionada = -2;
+        palavras_acertadas++;
+        num_palavras--;
+      } 
     }
-  }
+  } 
 }
 
 void espera_enter()
@@ -102,10 +130,10 @@ void espera_enter()
 
 void apresentacao()
 {
-  printf("Você deve digitar os números que aparecerão na tela.\n");
+  printf("Você deve digitar as letras que aparecerão na tela.\n");
   printf("A ordem não é importante.\n");
   printf("Tecle <enter> para iniciar. ");
-  espera_enter();
+  
 }
 
 void encerramento()
@@ -124,26 +152,31 @@ bool quer_jogar_de_novo()
     if (c == '\n') {
       return false;
     } else if (c == 's' || c == 'S') {
-      espera_enter();
-      return true;
+        espera_enter();
+        return true;
     }
   }
 }
 
 void preenche_vet(int l, int c, char v[l][c])
 {
-  for (int i = 0; i < l; i++) {
-    // gera um número aleatório entre 0 e 999
-    for (int j = 0; j < c; j++) {
+  int i = 0;
+  int j = 0;
+  for (i = 0; i < l; i++) {
+    for (j = 0; j < c-1; j++) {
       v[i][j] = aleatorio('a', 'z');
     }
+    v[i][j] = '\0';
   } 
 }
 
-void mostra_vet(int l, int c, char v[l][c])
+void mostra_vet(int palavra, int l, int c, char v[l][c])
 {
   printf("\n[");
   for (int i = 0; i < l; i++) {
+    if(i == palavra) {
+      continue;
+    }
     for(int j = 0; j < c; j++) {
       printf("%c", v[i][j]);
     }
@@ -154,32 +187,48 @@ void mostra_vet(int l, int c, char v[l][c])
   printf(" ]\n\n");
 }
 
-int acha_letra(int t, char v[t][t], char n)
+int seleciona_palavra(int t, char v[t][t], char letra)
 {
-  /// você deve alterar abaixo desta linha
-  for(int i = 0; i < t; i++) {
-    if(n == v[i][0]) {
+  for (int i = 0; i < t; i++) {
+    if (v[i][0] == letra) {
       return i;
-    } else {
-        if(i == t-1) {
-          return -1;
-        } 
     }
   }  
-  /// você deve alterar acima desta linha  
+  return -1; 
 }
 
-void remove_pos(int lc, char v[lc][lc], int p) 
+void remove_pos(int p, int t, char v[t][t], char letra) 
 {
-  /// você deve alterar abaixo desta linha
-    for(int i = 0; i < lc; i++) {
-      v[p][i] = v[p][i+1]; 
-    }
-  /// você deve alterar acima desta linha  
+    if (v[p][0] == letra) {
+      for (int i = 0; i < t; i++) {
+        v[p][i] = v[p][i+1]; 
+      }
+    } 
 }
 
 int aleatorio(int min, int max)
 {
   int r = rand() % (max - min + 1);
   return r + min;
-};
+}
+
+void imprime_palavra(int p, int t, char v[t][t]) 
+{
+  for (int i = 0; i < t; i++) {
+        if (v[p][i] == '\0') {
+          printf("\n");
+          break;
+        } else {
+          printf("%c ", v[p][i]);
+        }
+      }
+}
+
+void exclui_palavra(int posicao, char v[NUM_PALAVRAS][NUM_LETRAS])
+{
+  if (v[posicao][0] == '\0') {
+      for (int i = 0; i < NUM_LETRAS; i++) {
+        v[posicao - 1][i] = v[posicao][i]; 
+      }
+    }
+}
