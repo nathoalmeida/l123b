@@ -37,18 +37,17 @@ bool eh_palindromo(char p[])
 
 void copia_letras(char d[], char o[]) 
 {
-    int po = 0;
-    int pd = 0;
+    /* int po = 0;
+    int pd = 0; */
 
-    
- /* int tam = mstrlen(o) + 1;
+  int tam = mstrlen(o) + 1;
   for(int i = 0; i < tam; i++) {
     if(o[i] >= 'a' && o[i] <= 'z') {
       d[i] = o[i] - 'a' + 'A';
     } else {
         d[i] = o[i];
     }
-  } */
+  } 
 }
 
 int main() 
