@@ -11,6 +11,7 @@
 #include <time.h>
 #include <string.h>
 #include "tecla.h"
+#include "tela.h"
 
 // definições de constantes
 // número de palavras do banco de palavras
@@ -52,6 +53,10 @@ void imprime_matriz(int palavra, int l, int c, char v[l][c]);
 int aleatorio(int min, int max);
 // verifica se uma palavra contém acentuação
 bool tem_acento(int tam, char v[tam]);
+// desenha a tela
+void desenha_tela(char matriz[NUM_PALAVRAS][NUM_LETRAS], int palavra_selecionada, int palavras_acertadas, double tempo_restante);
+// processa entrada
+void processa_entrada(char matriz[NUM_PALAVRAS][NUM_LETRAS], int *palavra_selecionada, int *palavras_acertadas);
 
 int main()
 {
@@ -69,6 +74,7 @@ int main()
   encerramento();
 
   tecla_fim();
+  tela_fim();
 }
 
 void jogo()
@@ -88,49 +94,12 @@ void jogo()
   preenche_matriz(banco_de_palavras, num_palavras, num_letras, matriz_palavras);
   
   // inicializa timer
-  long t0 = time(0);
+  double t0 = tela_relogio();
+  double tempo_restante = TEMPO - (tela_relogio() - t0);
 
-  while (true) {
-    int resta = TEMPO - (time(0) - t0);
-    if (resta <= 0) {
-      printf("Tempo esgotado\n");
-      break;
-    }
+  desenha_tela(matriz_palavras, palavra_selecionada, palavras_acertadas, tempo_restante);
+  processa_entrada(matriz_palavras, &palavra_selecionada, &palavras_acertadas);
 
-    if (palavras_acertadas == NUM_PALAVRAS) { 
-      printf("Parabéns, você acertou todas, e sobraram %d segundos!\n", resta); 
-      break;
-    }
-
-    imprime_matriz(palavra_selecionada, num_palavras, num_letras, matriz_palavras); 
-
-    if (palavra_selecionada >= 0) {
-      imprime_palavra(palavra_selecionada, num_letras, matriz_palavras);
-    }
-
-    printf("você tem %d segundos\n", resta);
-    printf("digite uma das letras");
-    char letra;
-    letra = tecla_le_char();
-
-    if (letra != '\0') {
-      if (palavra_selecionada < 0) {
-        palavra_selecionada = seleciona_palavra(num_letras, matriz_palavras, letra);
-      }
-
-      if (letra == -1) {
-        printf("Letra %c não encontrada\n", letra);
-      } else {
-          remove_letra(palavra_selecionada, num_letras, matriz_palavras, letra);
-          if (matriz_palavras[palavra_selecionada][0] == '\0') {
-            exclui_palavra(palavra_selecionada, matriz_palavras, num_palavras);
-            palavra_selecionada = -1;
-            palavras_acertadas++;
-            num_palavras--;
-          } 
-        }
-    }
-  } 
 }
 
 void espera_enter()
@@ -199,7 +168,7 @@ void exclui_palavra(int posicao, char palavras[][NUM_LETRAS], int n_palavras)
   }
 }
 
-void remove_letra(int p, int t, char v[t][t], char letra) 
+void remove_letra(int p, int t, char v[][t], char letra) 
 {
   if (v[p][0] == letra) {
     for (int i = 0; i < t; i++) {
@@ -269,4 +238,61 @@ bool tem_acento(int tam, char v[tam])
   } 
  } 
  return false;
+}
+
+void desenha_tela(char matriz[NUM_PALAVRAS][NUM_LETRAS], int palavra_selecionada, int palavras_acertadas, double tempo_restante)
+{
+  tela_limpa();
+  int lin = tela_nlin() / 2 - 1;
+  int col = tela_ncol() / 2 - 26 / 2;
+
+  printf("Digite uma palavra:\n");
+
+  tela_cor_normal();
+  tela_cor_letra(150, 80, 50);
+  
+  if (palavra_selecionada >= 0) {
+    imprime_palavra(palavra_selecionada, NUM_LETRAS, matriz);
+  }
+  
+  imprime_matriz(palavra_selecionada, NUM_PALAVRAS, NUM_LETRAS, matriz);
+
+  tela_lincol(lin + 2, col);
+  tela_cor_normal();
+  printf("Faltam %d palavras, ", NUM_PALAVRAS - palavras_acertadas);
+  if (tempo_restante < 5) {
+    tela_cor_letra(200, 0, 0);
+  }
+  printf("%.1f", tempo_restante);
+  tela_cor_normal();
+  printf(" segundos");
+
+  if (palavras_acertadas == NUM_PALAVRAS) { 
+      printf("Parabéns, você acertou todas, e sobraram %f segundos!\n", tempo_restante); 
+  }
+
+  tela_atualiza();
+}
+
+void processa_entrada(char matriz[NUM_PALAVRAS][NUM_LETRAS], int *palavra_selecionada, int *palavras_acertadas)
+{
+  char c = tecla_le_char();
+  int acertos = 0;
+  int palavra;
+  // se não foi digitado nada, não tem o que fazer
+  if (c == '\0') return;
+  // CONSERTAR ESSAS COISAS AQUI
+  while (*palavra_selecionada < 0) {
+    *palavra_selecionada = seleciona_palavra(NUM_PALAVRAS, matriz, c);
+  }
+
+  char proxima_letra = matriz[*palavra_selecionada][acertos];
+
+  remove_letra(*palavra_selecionada, NUM_LETRAS, matriz, c);
+
+  if (matriz[palavra][0] == '\0') {
+    exclui_palavra(*palavra_selecionada, matriz, NUM_PALAVRAS);
+    *palavra_selecionada = -1;
+    *palavras_acertadas++;
+  } 
 }
