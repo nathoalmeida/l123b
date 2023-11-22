@@ -16,7 +16,7 @@ typedef struct
   carta_t cartas[52];
 } pilha_t;
 
-void empilha_carta(carta_t carta, pilha_t *pilha);
+carta_t retira_carta_topo(pilha_t *pilha);
 int main() 
 {
   pilha_t pilha1 = {0};
@@ -28,8 +28,9 @@ int main()
 
 }
 
-void empilha_carta(carta_t carta, pilha_t *pilha)
+carta_t retira_carta_topo(pilha_t *pilha)
 {
-  pilha->cartas[pilha->n_cartas] = carta;
-  pilha->n_cartas++;
+  carta_t carta_retirada = pilha->cartas[pilha->n_cartas];
+  pilha->cartas[pilha->n_cartas] = NULL;
+  return carta_retirada;
 }

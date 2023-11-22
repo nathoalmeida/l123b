@@ -13,23 +13,21 @@ typedef struct
 typedef struct
 {
   int n_cartas;
+  int n_cartas_fechadas;
   carta_t cartas[52];
 } pilha_t;
 
-void empilha_carta(carta_t carta, pilha_t *pilha);
+void empilha_varias_cartas(pilha_t *destino, pilha_t *origem);
+
 int main() 
 {
-  pilha_t pilha1 = {0};
-  carta_t carta1 = {as, ouro};
+ pilha_t pilha1 = {2, {4, ouro}, {5, copas}};
+ pilha_t pilha2 = {0};
 
-  empilha_carta(carta1, &pilha1);
-
-  printf("A pilha tem %d carta(s)\n", pilha1.n_cartas);
 
 }
 
-void empilha_carta(carta_t carta, pilha_t *pilha)
+void empilha_varias_cartas(pilha_t *destino, pilha_t *origem)
 {
-  pilha->cartas[pilha->n_cartas] = carta;
-  pilha->n_cartas++;
+  for (int i = destino->n_cartas; i < destino->n_cartas )
 }

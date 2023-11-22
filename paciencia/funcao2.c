@@ -16,20 +16,24 @@ typedef struct
   carta_t cartas[52];
 } pilha_t;
 
-void empilha_carta(carta_t carta, pilha_t *pilha);
+carta_t retorna_carta_topo(pilha_t pilha);
 int main() 
 {
-  pilha_t pilha1 = {0};
+  
   carta_t carta1 = {as, ouro};
+  pilha_t pilha1 = {1, carta1};
 
-  empilha_carta(carta1, &pilha1);
+  carta_t carta_retornada = retorna_carta_topo(pilha1);
+
+  printf("A carta do topo é %c", carta_retornada.valor);
 
   printf("A pilha tem %d carta(s)\n", pilha1.n_cartas);
 
+
+
 }
 
-void empilha_carta(carta_t carta, pilha_t *pilha)
+carta_t retorna_carta_topo(pilha_t pilha)
 {
-  pilha->cartas[pilha->n_cartas] = carta;
-  pilha->n_cartas++;
+  return pilha.cartas[pilha.n_cartas - 1];
 }
