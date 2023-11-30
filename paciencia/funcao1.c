@@ -1,3 +1,4 @@
+// FUNÇÃO 1 - EMPILHA UMA CARTA EM UMA PILHA
 #include <stdio.h>
 
 typedef enum { ouro, copas, espadas, paus } naipe_t;

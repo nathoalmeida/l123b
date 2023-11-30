@@ -1,4 +1,4 @@
-// FUNÇÃO 5 - EMPILHA VÁRIAS CARTAS
+// FUNÇÃO 7 - FUNÇÃO QUE FECHA TODAS AS CARTAS
 #include <stdio.h>
 
 typedef enum { ouro, copas, espadas, paus } naipe_t;
@@ -18,7 +18,7 @@ typedef struct
   carta_t cartas[52];
 } pilha_t;
 
-void empilha_varias_cartas(int num_cartas, pilha_t *destino, pilha_t *origem);
+void fecha_pilha(pilha_t *pilha);
 
 int main() 
 {
@@ -30,12 +30,9 @@ int main()
  printf("%d\n", pilha2.n_cartas);
 }
 
-void empilha_varias_cartas(int num_cartas, pilha_t *destino, pilha_t *origem)
+void fecha_pilha(pilha_t *pilha)
 {
-  for (int i = 0; i < num_cartas; i++) {
-   // empilha_carta(origem->carta[origem->cartas[n_cartas - 1 - i], destino);
-  };
-
-  destino->n_cartas = destino->n_cartas + num_cartas;
-  origem->n_cartas = origem->n_cartas - num_cartas;
+  pilha->n_cartas_fechadas = pilha->n_cartas;
 }
+
+

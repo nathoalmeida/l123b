@@ -1,4 +1,6 @@
+// RETIRA A CARTA DO TOPO
 #include <stdio.h>
+#include <assert.h>
 
 typedef enum { ouro, copas, espadas, paus } naipe_t;
 typedef enum { as = 1, valete = 11, dama, rei } valor_t;
@@ -17,20 +19,23 @@ typedef struct
 } pilha_t;
 
 carta_t retira_carta_topo(pilha_t *pilha);
+
+
 int main() 
 {
   pilha_t pilha1 = {0};
   carta_t carta1 = {as, ouro};
 
-  empilha_carta(carta1, &pilha1);
+  retira_carta_topo(&pilha1);
 
   printf("A pilha tem %d carta(s)\n", pilha1.n_cartas);
 
 }
 
-carta_t retira_carta_topo(pilha_t *pilha)
+carta_t retira_carta_topo(pilha_t *pilha) 
 {
-  carta_t carta_retirada = pilha->cartas[pilha->n_cartas];
-  pilha->cartas[pilha->n_cartas] = NULL;
-  return carta_retirada;
+  // carta_t carta = retorna_carta_topo(pilha);
+  pilha->n_cartas--;
+  // return carta;
 }
+

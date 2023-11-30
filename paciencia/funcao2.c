@@ -1,3 +1,4 @@
+// RETORNA A CARTA QUE ESTÁ NO TOPO
 #include <stdio.h>
 
 typedef enum { ouro, copas, espadas, paus } naipe_t;

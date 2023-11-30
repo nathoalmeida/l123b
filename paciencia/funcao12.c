@@ -1,0 +1,148 @@
+// DESENHA A CARTA QUE ESTÁ NO TOPO DA PILHA
+
+#include <stdio.h>
+#include <string.h>
+#include "tela.h"
+
+typedef enum { ouro, copas, espadas, paus } naipe_t;
+typedef enum { as = 1, valete = 11, dama, rei } valor_t;
+typedef enum { vermelho, preto } cor_t;
+
+typedef struct
+{
+  valor_t valor;
+  naipe_t naipe;
+} carta_t;
+
+typedef struct
+{
+  int n_cartas;
+  int n_cartas_fechadas;
+  carta_t cartas[52];
+} pilha_t;
+
+void descricao_carta(carta_t carta, char *tipo_carta);
+
+cor_t cor(carta_t c);
+
+void desenha_carta_aberta(carta_t carta);
+
+void desenha_carta_fechada();
+
+void desenha_carta_topo(pilha_t *pilha);
+
+carta_t retorna_carta_topo(pilha_t *pilha);
+
+int total_cartas_pilha(pilha_t *pilha);
+
+int total_cartas_fechadas(pilha_t *pilha);
+
+int main()
+{
+  carta_t carta = { valete, ouro};
+  pilha_t pilha = {1, 0, carta};
+  
+  desenha_carta_topo(&pilha);
+  
+}
+
+void desenha_carta_aberta(carta_t carta) 
+{
+  char tipo_carta[10];
+
+  printf("\u250F");
+  for(int i = 0; i < 5; i++) {
+    printf("\u2501");
+  }
+  printf("\u2513\n");
+
+  printf("\u2503");
+  descricao_carta(carta, tipo_carta);
+  tela_cor_normal();
+  for(int i = 0; i < 2; i++) {
+    printf("\u2503     \u2503\n");
+  }
+  printf("\u2503   ");
+  descricao_carta(carta, tipo_carta);
+  tela_cor_normal();
+  printf("\u2517");
+  for(int i = 0; i < 5; i++) {
+    printf("\u2501");
+  }
+  printf("\u251B\n");
+}
+
+void desenha_carta_fechada() 
+{
+  printf("\u250F");
+  for(int i = 0; i < 5; i++) {
+    printf("\u2501");
+  }
+  printf("\u2513\n");
+
+  for(int i = 0; i < 4; i++) {
+    printf("\u2503");
+      printf("\u2573\u2573\u2573\u2573\u2573");
+      printf("\u2503\n");
+  }
+  
+  printf("\u2517");
+  for(int i = 0; i < 5; i++) {
+    printf("\u2501");
+  }
+  printf("\u251B\n");
+}
+
+void descricao_carta(carta_t carta, char *tipo_carta)
+{
+  switch (carta.valor)
+  { // transforma em srtcat no vetor;
+    case as:     sprintf(tipo_carta, "%c", 'A'); break;
+    case valete: sprintf(tipo_carta, "%c", 'J'); break;
+    case dama:   sprintf(tipo_carta, "%c", 'Q'); break;
+    case rei:    sprintf(tipo_carta, "%c", 'K'); break;
+    default:     sprintf(tipo_carta, "%d", carta.valor); break;
+  }
+
+  switch (carta.naipe) {
+    
+    case copas:   strcat(tipo_carta, "\u2665"); break;
+    case ouro:    strcat(tipo_carta, "\u2666"); break;
+    case paus:    strcat(tipo_carta, "\u2663"); break;
+    case espadas: strcat(tipo_carta, "\u2660"); break;
+  }
+
+  if (cor(carta) == vermelho) tela_cor_letra(200,0,0);
+  else tela_cor_letra(0,0,0);
+  printf("%s\n", tipo_carta);
+}
+
+cor_t cor(carta_t c) 
+{
+  if (c.naipe == ouro || c.naipe == copas) return vermelho;
+  return preto;
+}
+
+void desenha_carta_topo(pilha_t *pilha) 
+{
+  if (total_cartas_pilha(pilha) == total_cartas_fechadas(pilha)) {
+    desenha_carta_fechada();
+  } else {
+    desenha_carta_aberta(retorna_carta_topo(pilha));
+  }
+}
+
+int total_cartas_pilha(pilha_t *pilha)
+{
+  return pilha->n_cartas;
+}
+
+int total_cartas_fechadas(pilha_t *pilha)
+{
+  return pilha->n_cartas_fechadas;
+}
+
+carta_t retorna_carta_topo(pilha_t *pilha)
+{
+  return pilha->cartas[pilha->n_cartas - 1];
+}

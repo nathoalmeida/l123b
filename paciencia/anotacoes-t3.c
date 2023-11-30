@@ -7,6 +7,7 @@
 typedef enum { ouro, copas, espadas, paus } naipe_t;
 typedef enum { as = 1, valete = 11, dama, rei } valor_t;
 typedef enum { vermelho, preto } cor_t;
+
 typedef struct
 {
   valor_t valor;
@@ -33,6 +34,11 @@ bool pode_empilhar(carta_t c, pilha_t p)
     if (cor(c) == cor(topo)) return false;
     return c.valor == topo.valor -1;
   }
+}
+
+bool esta_vazia(pilha_t *p)
+{
+  p->n_cartas == 0;
 }
 
 int main() 
