@@ -107,7 +107,7 @@ bool move_saida_para_principal(jogo_t *jogo, int n_pilha_saida, int n_pilha_prin
 bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino, int n_cartas_movidas);
 // move "N" cartas de uma pilha principal para outra pilha principal
 bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino);
-// recebe uma string e seleciona uma jogada
+// recebe uma string e seleciona uma função que realiza uma jogada
 bool faz_uma_jogada(jogo_t *jogo, char *jogada);
 
 int main() 
@@ -459,22 +459,42 @@ bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino)
 
   for (int i = pos_cartas; i < total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]); i++) {
     if (pode_mover_p_principal(jogo, n_pilha_destino, jogo->pilha_principal[n_pilha_origem].cartas[i])) {
-      if(pode_mover_n_cartas(jogo, n_pilha_origem, total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - i)) {
         n_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - i;
         
-        moveu_cartas = move_varias_cartas_aux(jogo, n_pilha_origem, n_pilha_destino, n_cartas);
-        break;
-      }
+        if(pode_mover_n_cartas(jogo, n_pilha_origem, n_cartas)) {
+          moveu_cartas = move_varias_cartas_aux(jogo, n_pilha_origem, n_pilha_destino, n_cartas);
+          break;
+        }
     } else {
         continue;
     }
   }
- 
+  
   return moveu_cartas;
 }
 
 bool faz_uma_jogada(jogo_t *jogo, char *jogada)
 {
-  
+  /* switch (jogada[0])
+  {
+  case 'm': 
+    if (jogada[1] == NULL || jogada[1] == 'p') {
+      return abre_carta_monte(&jogo);
+    } else return false;
+  break;
+  case 'p': 
+    if (jogada[1] == NULL || jogada[1] == 'm') {
+      return recicla_descarte(&jogo);
+    } else if (jogada[1] >= 'a' && jogada[1] <= 'd') {
+        return move_descarte_para_saida(&jogo, jogada[1] - 'a');
+    } else if (jogada[1] >= '1' && jogada[1] <= '7') {
+        return move_descarte_para_principal(&jogo, jogada[1] - '1');
+    } else return false;
+  break;
+  case 'a': break; 
+  default:
+    break;
+  } */
+
   return true;
 }
