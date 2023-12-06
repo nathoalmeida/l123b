@@ -1,4 +1,5 @@
-// FUNÇÃO 1 - INICIALIZA O JOGO
+
+// FUNCÃO VERIFICA SE PODE MOVER PARA A SAÍDA
 
 #include <stdio.h>
 #include <assert.h>
@@ -33,7 +34,7 @@ typedef struct
   pilha_t pilha_principal[7];
 } jogo_t;
 
-
+// PARTE 1 - FUNÇÕES AUXILIARES
 // cria um baralho completo
 void gera_baralho(pilha_t *baralho);
 // embaralha as cartas
@@ -44,8 +45,6 @@ bool esta_vazia(pilha_t *p);
 bool esta_cheia(pilha_t *p);
 // coloca uma carta no topo da pilha
 void empilha_carta(carta_t carta, pilha_t *pilha);
-// abre a carta do topo da pilha
-void abre_carta_topo(pilha_t *pilha);
 // retorna a carta que está no topo da pilha
 carta_t retorna_carta_topo(pilha_t *pilha);
 // retira a carta que está no topo da pilha
@@ -56,6 +55,8 @@ void fecha_cartas_pilha(pilha_t *pilha);
 void esvazia_pilha(pilha_t *pilha);
 // empilha várias cartas no topo da pilha
 void empilha_varias_cartas(int num_cartas, pilha_t *destino, pilha_t *origem);
+// abre a carta do topo da pilha
+void abre_carta_topo(pilha_t *pilha);
 // retorna o total de cartas da pilha
 int total_cartas_pilha(pilha_t *pilha);
 // retorna o número de cartas fechadas da pilha
@@ -63,6 +64,7 @@ int total_cartas_fechadas(pilha_t *pilha);
 // retorna o número de cartas abertas da pilha
 int total_cartas_abertas(pilha_t *pilha);
 // retorna uma carta aberta da pilha
+carta_t retorna_carta(pilha_t *pilha, int pos, bool *esta_aberta);
 // cria uma carta
 carta_t cria_carta(valor_t valor, naipe_t naipe);
 // retorna o naipe de uma carta
@@ -77,14 +79,34 @@ void descricao_carta(carta_t carta, char *tipo_carta);
 bool sao_iguais(carta_t uma_carta, carta_t outra_carta);
 // gera um valor aleatório
 int aleatorio(int min, int max);
+
+// PARTE 2 - FUNÇÕES DE JOGO
 // inicializa o jogo
 void inicializa_jogo(jogo_t *jogo);
+bool pode_mover_saida(jogo_t *jogo, int n_pilha, carta_t carta);
 
 int main() 
 {
   srand(time(0));
   jogo_t jogo;
+  char tipo_carta[10];
   inicializa_jogo(&jogo);
+
+
+  carta_t carta = { as, ouro};
+  carta_t carta2 = { 2, ouro};
+  descricao_carta(carta2, tipo_carta);
+  
+  empilha_carta(carta, &jogo.pilha_saida[0]);
+
+  if (pode_mover_saida(&jogo, 0, carta2)) {
+    printf("a segunda parte funciona\n");
+  } else {
+    printf("caguei");
+  }
+ 
+  printf("%d\n", retorna_carta_topo(&jogo.pilha_saida[0]).valor);
+  printf("%d", jogo.pilha_saida[0].n_cartas);
 }
 
 void gera_baralho(pilha_t *baralho)
@@ -120,12 +142,12 @@ void embaralha_cartas(pilha_t *baralho)
 
 bool esta_vazia(pilha_t *p)
 {
-  p->n_cartas == 0;
+  return p->n_cartas == 0;
 }
 
 bool esta_cheia(pilha_t *p)
 {
-  p->n_cartas == 52;
+  return p->n_cartas == 52;
 }
 
 void empilha_carta(carta_t carta, pilha_t *pilha)
@@ -175,6 +197,13 @@ void empilha_varias_cartas(int num_cartas_movidas, pilha_t *destino, pilha_t *or
   origem->n_cartas = origem->n_cartas - num_cartas_movidas;
 }
 
+void abre_carta_topo(pilha_t *pilha)
+{
+  if(pilha->n_cartas == pilha->n_cartas_fechadas) {
+    pilha->n_cartas_fechadas--;
+  }
+}
+
 int total_cartas_pilha(pilha_t *pilha)
 {
   return pilha->n_cartas;
@@ -217,7 +246,7 @@ cor_t cor(carta_t carta)
 void descricao_carta(carta_t carta, char *tipo_carta)
 {
   switch (carta.valor)
-  { // transforma em srtcat no vetor;
+  { 
     case as:     sprintf(tipo_carta, "%c", 'A'); break;
     case valete: sprintf(tipo_carta, "%c", 'J'); break;
     case dama:   sprintf(tipo_carta, "%c", 'Q'); break;
@@ -243,11 +272,10 @@ bool sao_iguais(carta_t uma_carta, carta_t outra_carta)
   return (uma_carta.naipe == outra_carta.naipe) && (uma_carta.valor == outra_carta.valor);
 }
 
-void abre_carta_topo(pilha_t *pilha)
+int aleatorio(int min, int max)
 {
-  if(pilha->n_cartas == pilha->n_cartas_fechadas) {
-    pilha->n_cartas_fechadas--;
-  }
+  int r = rand() % (max - min + 1);
+  return r + min;
 }
 
 void inicializa_jogo(jogo_t *jogo)
@@ -266,7 +294,6 @@ void inicializa_jogo(jogo_t *jogo)
   fecha_cartas_pilha(&jogo->monte);
   embaralha_cartas(&jogo->monte);
   empilha_carta(jogo->monte.cartas[total_cartas_pilha(&jogo->monte) - 1], &jogo->pilha_principal[0]);
-  empilha_varias_cartas(2, &jogo->pilha_principal[1], &jogo->monte);
   empilha_varias_cartas(7, &jogo->pilha_principal[6], &jogo->monte);
   fecha_cartas_pilha(&jogo->pilha_principal[0]);
   fecha_cartas_pilha(&jogo->pilha_principal[1]);
@@ -276,8 +303,11 @@ void inicializa_jogo(jogo_t *jogo)
   abre_carta_topo(&jogo->pilha_principal[6]); 
 }
 
-int aleatorio(int min, int max)
+bool pode_mover_saida(jogo_t *jogo, int n_pilha, carta_t carta)
 {
-  int r = rand() % (max - min + 1);
-  return r + min;
+  if(esta_vazia(&jogo->pilha_saida[n_pilha])) {
+    return carta.valor == as;
+  } else {
+    return (carta.valor == retorna_carta_topo(&jogo->pilha_saida[n_pilha]).valor + 1) && (carta.naipe == retorna_carta_topo(&jogo->pilha_saida[n_pilha]).naipe);
+  }
 }

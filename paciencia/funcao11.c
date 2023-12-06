@@ -24,35 +24,36 @@ void descricao_carta(carta_t carta, char *tipo_carta);
 
 cor_t cor(carta_t c);
 
-void desenha_carta_aberta(carta_t carta);
+void desenha_carta_aberta(carta_t carta, int linha, int coluna);
 
 int main()
 {
   carta_t carta = { valete, ouro};
-  
-  desenha_carta_aberta(carta);
+  tela_limpa();
+  desenha_carta_aberta(carta, 10, 10);
   
 }
 
-void desenha_carta_aberta(carta_t carta) 
+void desenha_carta_aberta(carta_t carta, int linha, int coluna) 
 {
   char tipo_carta[10];
-  
+  tela_lincol(linha, coluna);
   printf("\u250F");
   for(int i = 0; i < 5; i++) {
     printf("\u2501");
   }
   printf("\u2513\n");
-
   printf("\u2503");
   descricao_carta(carta, tipo_carta);
   tela_cor_normal();
+  printf("   \u2503\n");
   for(int i = 0; i < 2; i++) {
     printf("\u2503     \u2503\n");
   }
   printf("\u2503   ");
   descricao_carta(carta, tipo_carta);
   tela_cor_normal();
+  printf("\u2503\n");
   printf("\u2517");
   for(int i = 0; i < 5; i++) {
     printf("\u2501");

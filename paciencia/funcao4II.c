@@ -1,4 +1,5 @@
-// T3 - JOGO "PACIÊNCIA"
+// FUNÇÃO 4 VERIFICA SE PODE MOVER N CARTAS DE UMA PILHA
+
 #include <stdio.h>
 #include <assert.h>
 #include <time.h>
@@ -87,49 +88,20 @@ bool pode_mover_p_saida(jogo_t *jogo, int n_pilha, carta_t carta);
 bool pode_mover_p_principal(jogo_t *jogo, int n_pilha, carta_t carta);
 // verifica se pode mover "n" cartas de uma pilha
 bool pode_mover_n_cartas(jogo_t *jogo, int n_pilha, int n_cartas_movidas);
-// verifica se o jogador ganhou
-bool jogador_ganhou(jogo_t *jogo);
-
-// PARTE 3 - JOGADAS
-// abre uma carta do monte
-bool abre_carta_monte(jogo_t *jogo);
-// recicla o descarte
-bool recicla_descarte(jogo_t *jogo);
-// move uma carta do descarte para a saída
-bool move_descarte_para_saida(jogo_t *jogo, int n_pilha);
-// move uma carta do descarte para uma pilha principal
-bool move_descarte_para_principal(jogo_t *jogo, int n_pilha);
-// move uma carta da pilha de jogo para uma pilha de saída
-bool move_principal_para_saida(jogo_t *jogo, int n_pilha_principal, int n_pilha_saida);
-// move uma carta da pilha de saída para a pilha de jogo
-bool move_saida_para_principal(jogo_t *jogo, int n_pilha_saida, int n_pilha_principal);
-// move "N" cartas de uma pilha principal para outra pilha principal (auxiliar)
-bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino, int n_cartas_movidas);
-// move "N" cartas de uma pilha principal para outra pilha principal
-bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino);
-// recebe uma string e seleciona uma jogada
-bool faz_uma_jogada(jogo_t *jogo, char *jogada);
 
 int main() 
 {
   srand(time(0));
   jogo_t jogo;
   inicializa_jogo(&jogo);
-  char tipo_carta[10];
-  carta_t carta = { 2, ouro};
-  carta_t carta2 = { as, paus};
-  int n_pilha = 0 ;
-  int pos_cartas = 0;
-  int i = 0;
-  
-  esvazia_pilha(&jogo.pilha_principal[0]);
-  empilha_carta(carta, &jogo.pilha_principal[0]);
-  empilha_carta(carta2, &jogo.pilha_principal[0]);
-  
-  if(pode_mover_n_cartas(&jogo, 0, 1)) {
-    printf("finalmente resolvi");
-  }
-  
+
+  jogo.pilha_principal[0].n_cartas = 5;
+  jogo.pilha_principal->n_cartas_fechadas = 1;
+
+  if (pode_mover_n_cartas(&jogo, 0, 5)) {
+    printf("primeiro teste passou");
+  } else { printf("fudeu");}
+ 
 }
 
 void gera_baralho(pilha_t *baralho)
@@ -187,7 +159,6 @@ void empilha_carta(carta_t carta, pilha_t *pilha)
 
 carta_t retorna_carta_topo(pilha_t *pilha)
 {
-
   return pilha->cartas[pilha->n_cartas - 1];
 }
 
@@ -214,7 +185,7 @@ void empilha_varias_cartas(int num_cartas_movidas, pilha_t *destino, pilha_t *or
   assert(origem->n_cartas >= num_cartas_movidas);
   
     for (int i = 0; i < num_cartas_movidas; i++) {
-      empilha_carta(origem->cartas[origem->n_cartas - i - 1], destino);
+      empilha_carta(origem->cartas[origem->n_cartas], destino);
     }
 
   destino->n_cartas = destino->n_cartas + num_cartas_movidas;
@@ -348,133 +319,5 @@ bool pode_mover_p_principal(jogo_t *jogo, int n_pilha, carta_t carta)
 
 bool pode_mover_n_cartas(jogo_t *jogo, int n_pilha, int n_cartas_movidas)
 {
-  assert(n_cartas_movidas <= total_cartas_abertas(&jogo->pilha_principal[n_pilha]));
-
-  int pos_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha]) - n_cartas_movidas;
-  bool todas_moviveis = true;
-
-  for (int i = 0; i < n_cartas_movidas - 1; i++) {
-    
-    if ((cor(jogo->pilha_principal[n_pilha].cartas[pos_cartas + i]) != cor(jogo->pilha_principal[n_pilha].cartas[pos_cartas + i + 1])) 
-    && (retorna_valor_carta(jogo->pilha_principal[n_pilha].cartas[pos_cartas + i]) == retorna_valor_carta(jogo->pilha_principal[n_pilha].cartas[pos_cartas + i + 1]) + 1)) {
-      continue; 
-    } else {
-        todas_moviveis = false;
-        break;
-      }
-}
-  return todas_moviveis;
-}
-
-bool jogador_ganhou(jogo_t *jogo) 
-{
-  return total_cartas_pilha(&jogo->pilha_saida[0]) + total_cartas_pilha(&jogo->pilha_saida[1]) + 
-  total_cartas_pilha(&jogo->pilha_saida[2]) + total_cartas_pilha(&jogo->pilha_saida[3]) == 52;
-}
-
-bool abre_carta_monte(jogo_t *jogo)
-{
-  if (!esta_vazia(&jogo->monte)) {
-    empilha_carta(retira_carta_topo(&jogo->monte), &jogo->descarte);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool recicla_descarte(jogo_t *jogo)
-{
-  if (!esta_vazia(&jogo->descarte) && esta_vazia(&jogo->monte)) {
-    int n_cartas = total_cartas_pilha(&jogo->descarte);
-
-    for (int i = 0; i < n_cartas; i++) {
-      empilha_carta(retira_carta_topo(&jogo->descarte), &jogo->monte);
-    }
-
-    fecha_cartas_pilha(&jogo->monte);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool move_descarte_para_saida(jogo_t *jogo, int n_pilha)
-{
-  assert(!esta_vazia(&jogo->descarte));
-
-  if (pode_mover_p_saida(jogo, n_pilha, retorna_carta_topo(&jogo->descarte))) {
-    empilha_carta(retira_carta_topo(&jogo->descarte), &jogo->pilha_saida[n_pilha]);
-    return true;
-  } else return false;
-}
-
-bool move_descarte_para_principal(jogo_t *jogo, int n_pilha)
-{
-  assert(!esta_vazia(&jogo->descarte));
-
-  if (pode_mover_p_principal(jogo, n_pilha, retorna_carta_topo(&jogo->descarte))) {
-    empilha_carta(retira_carta_topo(&jogo->descarte), &jogo->pilha_principal[n_pilha]);
-    return true;
-  } else return false;
-}
-
-bool move_principal_para_saida(jogo_t *jogo, int n_pilha_principal, int n_pilha_saida)
-{
-  assert(!esta_vazia(&jogo->pilha_principal[n_pilha_principal]));
-  assert(!esta_cheia(&jogo->pilha_saida[n_pilha_saida]));
-
-  if (pode_mover_p_saida(jogo, n_pilha_saida, retorna_carta_topo(&jogo->pilha_principal[n_pilha_principal]))) {
-    empilha_carta(retira_carta_topo(&jogo->pilha_principal[n_pilha_principal]), &jogo->pilha_saida[n_pilha_saida]);
-    return true;
-  } else return false;
-}
-
-bool move_saida_para_principal(jogo_t *jogo, int n_pilha_saida, int n_pilha_principal)
-{
-  assert(!esta_vazia(&jogo->pilha_saida[n_pilha_saida]));
-  assert(!esta_cheia(&jogo->pilha_principal[n_pilha_principal]));
-
-  if (pode_mover_p_principal(jogo, n_pilha_principal, retorna_carta_topo(&jogo->pilha_saida[n_pilha_saida]))) {
-    empilha_carta(retira_carta_topo(&jogo->pilha_saida[n_pilha_saida]), &jogo->pilha_principal[n_pilha_principal]);
-    return true;
-  } else return false;
-}
-
-bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino, int n_cartas_movidas) {
-  assert(total_cartas_pilha(&jogo->pilha_principal[n_pilha_destino]) + n_cartas_movidas <= 52);
-
-  int pos_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - n_cartas_movidas;
-  for (int i = pos_cartas; i <= n_cartas_movidas; i++) {
-    empilha_carta(jogo->pilha_principal[n_pilha_origem].cartas[i], &jogo->pilha_principal[n_pilha_destino]);
-  }
-  
- return true;
-}
-
-bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino)
-{
-  int n_cartas = 0;
-  int pos_cartas = total_cartas_abertas(&jogo->pilha_principal[n_pilha_origem]) - total_cartas_fechadas(&jogo->pilha_principal[n_pilha_origem]);
-  bool moveu_cartas = false;
-
-  for (int i = pos_cartas; i < total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]); i++) {
-    if (pode_mover_p_principal(jogo, n_pilha_destino, jogo->pilha_principal[n_pilha_origem].cartas[i])) {
-      if(pode_mover_n_cartas(jogo, n_pilha_origem, total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - i)) {
-        n_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - i;
-        
-        moveu_cartas = move_varias_cartas_aux(jogo, n_pilha_origem, n_pilha_destino, n_cartas);
-        break;
-      }
-    } else {
-        continue;
-    }
-  }
- 
-  return moveu_cartas;
-}
-
-bool faz_uma_jogada(jogo_t *jogo, char *jogada)
-{
-  
-  return true;
+  return n_cartas_movidas <= (total_cartas_abertas(&jogo->pilha_principal[n_pilha]));
 }
