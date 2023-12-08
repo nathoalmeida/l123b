@@ -30,6 +30,10 @@ typedef struct
   pilha_t descarte;
   pilha_t pilha_saida[4];
   pilha_t pilha_principal[7];
+  int coordenadas_monte[2][2];
+  int coordenadas_saida[2][4];
+  int coordenadas_principal[2][7];
+  float pontos;
 } jogo_t;
 
 // PARTE 1 - FUNÇÕES AUXILIARES
@@ -110,6 +114,23 @@ bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino);
 // recebe uma string e seleciona uma função que realiza uma jogada
 bool faz_uma_jogada(jogo_t *jogo, char *jogada);
 
+// PARTE 4.1 - FUNÇÕES AUXILIARES DE DESENHO
+// desenha a borda de um local vazio ou carta
+void borda_retangulo(int li, int ci, int nl, int nc);
+// preenche o retângulo com caracteres
+void retangulo(int li, int ci, int nl, int nc, char *s);
+// desenha o texto dentro de uma carta
+void texto_esq(int lin, int col, char *txt);
+// retorna o número de colunas para imprimir uma string
+int nchar(char *s);
+
+// PARTE 4.2 - DESENHO DE CARTAS
+void desenha_carta_fechada(int lin, int col);
+void desenha_carta_aberta(int lin, int col, carta_t carta);
+void desenha_local(int lin, int col);
+void desenha_pilha_fechada(int lin, int col, pilha_t *pilha);
+void desenha_pilha_aberta(int lin, int col, pilha_t *pilha);
+
 int main() 
 {
   srand(time(0));
@@ -118,19 +139,29 @@ int main()
   char tipo_carta[10];
   carta_t carta = { 2, ouro};
   carta_t carta2 = { as, paus};
-  int n_pilha = 0 ;
+  carta_t carta3 = { 10, copas};
+  int n_pilha = 0;
   int pos_cartas = 0;
-  int i = 0;
   
   esvazia_pilha(&jogo.pilha_principal[0]);
   empilha_carta(carta, &jogo.pilha_principal[0]);
   empilha_carta(carta2, &jogo.pilha_principal[0]);
+  empilha_carta(carta3, &jogo.pilha_principal[0]);
+
+  tela_ini();
   
-  if(pode_mover_n_cartas(&jogo, 0, 1)) {
-    printf("finalmente resolvi");
-  }
-  
+
+  int lin = 4;
+  int col = 4;
+
+
+    tela_limpa();
+    desenha_pilha_aberta(lin, col, &jogo.pilha_principal[6]);
+
+    printf("\n\n\n\n\n\n\n\n");
+
 }
+  
 
 void gera_baralho(pilha_t *baralho)
 {
@@ -175,7 +206,7 @@ bool esta_cheia(pilha_t *p)
 
 void empilha_carta(carta_t carta, pilha_t *pilha)
 {
-  if (esta_vazia(pilha) || pilha->n_cartas != pilha->n_cartas_fechadas) {
+  if (esta_vazia(pilha) /*|| pilha->n_cartas != pilha->n_cartas_fechadas */) {
     pilha->cartas[pilha->n_cartas] = carta;
     pilha->n_cartas++;
   } else {
@@ -217,7 +248,7 @@ void empilha_varias_cartas(int num_cartas_movidas, pilha_t *destino, pilha_t *or
       empilha_carta(origem->cartas[origem->n_cartas - i - 1], destino);
     }
 
-  destino->n_cartas = destino->n_cartas + num_cartas_movidas;
+  // destino->n_cartas = destino->n_cartas + num_cartas_movidas;
   origem->n_cartas = origem->n_cartas - num_cartas_movidas;
 }
 
@@ -245,8 +276,11 @@ int total_cartas_abertas(pilha_t *pilha)
 
 carta_t retorna_carta(pilha_t *pilha, int pos, bool *esta_aberta)
 {
-  *esta_aberta = pos < pilha->n_cartas && pos >= (pilha->n_cartas - pilha->n_cartas_fechadas);
-  assert(!esta_aberta);
+  if (pos < pilha->n_cartas && pos >= pilha->n_cartas - pilha->n_cartas_fechadas) {
+    *esta_aberta = true;
+  } else {
+    *esta_aberta = false;
+  }
   
   return pilha->cartas[pos];
 }
@@ -288,7 +322,7 @@ void descricao_carta(carta_t carta, char *tipo_carta)
 
   if (cor(carta) == vermelho) tela_cor_letra(200,0,0);
   else tela_cor_letra(0,0,0);
-  printf("%s\n", tipo_carta);
+  // printf("%s\n", tipo_carta);
 }
 
 bool sao_iguais(carta_t uma_carta, carta_t outra_carta)
@@ -392,6 +426,7 @@ bool recicla_descarte(jogo_t *jogo)
     }
 
     fecha_cartas_pilha(&jogo->monte);
+    jogo->pontos = 0;
     return true;
   } else {
     return false;
@@ -404,6 +439,7 @@ bool move_descarte_para_saida(jogo_t *jogo, int n_pilha)
 
   if (pode_mover_p_saida(jogo, n_pilha, retorna_carta_topo(&jogo->descarte))) {
     empilha_carta(retira_carta_topo(&jogo->descarte), &jogo->pilha_saida[n_pilha]);
+    jogo->pontos += 15;
     return true;
   } else return false;
 }
@@ -414,6 +450,7 @@ bool move_descarte_para_principal(jogo_t *jogo, int n_pilha)
 
   if (pode_mover_p_principal(jogo, n_pilha, retorna_carta_topo(&jogo->descarte))) {
     empilha_carta(retira_carta_topo(&jogo->descarte), &jogo->pilha_principal[n_pilha]);
+    jogo->pontos += 10;
     return true;
   } else return false;
 }
@@ -425,6 +462,7 @@ bool move_principal_para_saida(jogo_t *jogo, int n_pilha_principal, int n_pilha_
 
   if (pode_mover_p_saida(jogo, n_pilha_saida, retorna_carta_topo(&jogo->pilha_principal[n_pilha_principal]))) {
     empilha_carta(retira_carta_topo(&jogo->pilha_principal[n_pilha_principal]), &jogo->pilha_saida[n_pilha_saida]);
+    jogo->pontos += 15;
     return true;
   } else return false;
 }
@@ -436,6 +474,7 @@ bool move_saida_para_principal(jogo_t *jogo, int n_pilha_saida, int n_pilha_prin
 
   if (pode_mover_p_principal(jogo, n_pilha_principal, retorna_carta_topo(&jogo->pilha_saida[n_pilha_saida]))) {
     empilha_carta(retira_carta_topo(&jogo->pilha_saida[n_pilha_saida]), &jogo->pilha_principal[n_pilha_principal]);
+    jogo->pontos -= 15;
     return true;
   } else return false;
 }
@@ -475,6 +514,7 @@ bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino)
 
 bool faz_uma_jogada(jogo_t *jogo, char *jogada)
 {
+  // OLHA SÓ O PRIMEIRO CHAR, DEPOIS CHAMA A FUNÇÃO AUXILIAR COM O SEGUNDO CHAR 
   /* switch (jogada[0])
   {
   case 'm': 
@@ -498,3 +538,133 @@ bool faz_uma_jogada(jogo_t *jogo, char *jogada)
 
   return true;
 }
+
+bool faz_uma_jogada_aux(jogo_t *jogo, char *jogada)
+{
+  return true;
+}
+
+void borda_retangulo(int li, int ci, int nl, int nc)
+{
+  int lin = li;
+  int col = ci;
+  tela_lincol(lin, col);
+  printf("\u256d");
+  for (int i = 0; i < nc - 2; i++) {
+    printf("\u2500");
+  }
+  printf("\u256e");
+  lin++;
+  while (lin < li + nl - 1) {
+    tela_lincol(lin, ci);
+    printf("\u2502");
+    tela_lincol(lin, ci + nc - 1);
+    printf("\u2502");
+    lin++;
+  }
+  tela_lincol(lin, col);
+  printf("\u2570");
+  for (int i = 0; i < nc - 2; i++) {
+    printf("\u2500");
+  }
+  printf("\u256f");
+}
+
+void retangulo(int li, int ci, int nl, int nc, char *s)
+{
+  for (int lin = li; lin < li + nl; lin++) {
+    tela_lincol(lin, ci);
+    for (int col = ci; col < ci + nc; col++) {
+      printf("%s", s);
+    }
+  }
+}
+
+void texto_esq(int lin, int col, char *txt)
+{
+  int col_ini = col - nchar(txt) + 1;
+  tela_lincol(lin, col_ini);
+  printf("%s", txt);
+}
+
+int nchar(char *s)
+{
+  // caracteres com código binário entre 0b10000000 e 0b10111111 são de
+  // continuação em utf8
+  char ci = 0b10000000;
+  char cf = 0b10111111;
+  int t = strlen(s);
+  for (int i = 0; s[i] != '\0'; i++) {
+    if (s[i] >= ci && s[i] <= cf) {
+      t--;
+    }
+  }
+  return t;
+}
+
+void desenha_carta_fechada(int lin, int col)
+{
+  int nl = 7;
+  int nc = 8;
+
+  borda_retangulo(lin, col, nl, nc);
+  retangulo(lin + 1, col + 1, nl-2, nc-2, "\u2573");
+}
+
+void desenha_carta_aberta(int lin, int col, carta_t carta)
+{
+  char descricao[10];
+  int nl = 7;
+  int nc = 8;
+
+  borda_retangulo(lin, col, nl, nc);
+  descricao_carta(carta, descricao);
+  if (strlen(descricao) == 5) {
+    texto_esq(lin+1, col+3, descricao);
+    tela_cor_normal();
+    retangulo(lin + 1, col + 4, nl-7, nc-1, " ");
+  } else {
+    texto_esq(lin+1, col+2, descricao);
+    tela_cor_normal();
+    retangulo(lin + 1, col + 3, nl-2, nc-4, " ");
+  }
+  retangulo(lin + 2, col+1, nl-3, nc-2, " ");
+  
+}
+
+void desenha_local(int lin, int col) 
+{
+  int nl = 7;
+  int nc = 8;
+
+  borda_retangulo(lin, col, nl, nc);
+  retangulo(lin + 1, col + 1, nl-2, nc-2, " ");
+}
+
+void desenha_pilha_fechada(int lin, int col, pilha_t *pilha)
+{
+  if (esta_vazia(pilha)) {
+    desenha_local(lin, col);
+  } else if (pilha->n_cartas == pilha->n_cartas_fechadas) {
+      desenha_carta_fechada(lin, col);
+  } else {
+      desenha_carta_aberta(lin, col, retorna_carta_topo(pilha));
+  }
+}
+
+void desenha_pilha_aberta(int lin, int col, pilha_t *pilha)
+{
+  bool esta_aberta;
+  int pos_carta = 0;
+
+  for (int i = 0; i < total_cartas_pilha(pilha); i++) {
+    retorna_carta(pilha, i, &esta_aberta);
+    if(esta_aberta) {
+      desenha_carta_aberta(lin+pos_carta, col, retorna_carta(pilha, i, &esta_aberta));
+    } else {
+        desenha_carta_fechada(lin+pos_carta, col);
+      }
+    pos_carta += 2;
+  }
+}
+

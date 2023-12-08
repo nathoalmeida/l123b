@@ -38,5 +38,9 @@ char tecla_le_char(void)
   if (read(1, &a, 1) != 1) {
     return 0; // nada foi digitado
   }
+  // as vezes é codificado um caractere diferente.
+  // quero que enter seja \n e backspace seja \b
+  if (a == 127) return '\b';
+  if (a == '\r') return '\n';
   return a;
 }
