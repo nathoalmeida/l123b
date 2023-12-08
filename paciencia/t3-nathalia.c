@@ -31,8 +31,8 @@ typedef struct
   pilha_t pilha_saida[4];
   pilha_t pilha_principal[7];
   int coordenadas_monte[2][2];
-  int coordenadas_saida[2][4];
-  int coordenadas_principal[2][7];
+  int coordenadas_saida[4][2];
+  int coordenadas_principal[7][2];
   float pontos;
 } jogo_t;
 
@@ -131,6 +131,13 @@ void desenha_local(int lin, int col);
 void desenha_pilha_fechada(int lin, int col, pilha_t *pilha);
 void desenha_pilha_aberta(int lin, int col, pilha_t *pilha);
 
+// PARTE 6 - DESENHOS DE TELA
+// inicializa as posições de cada pilha
+void inicializa_coordenadas(jogo_t *jogo);
+// desenho inicial das pilhas
+void inicializa_desenho_pilhas(jogo_t *jogo);
+
+
 int main() 
 {
   srand(time(0));
@@ -143,22 +150,19 @@ int main()
   int n_pilha = 0;
   int pos_cartas = 0;
   
-  esvazia_pilha(&jogo.pilha_principal[0]);
-  empilha_carta(carta, &jogo.pilha_principal[0]);
-  empilha_carta(carta2, &jogo.pilha_principal[0]);
-  empilha_carta(carta3, &jogo.pilha_principal[0]);
+  inicializa_coordenadas(&jogo);
 
   tela_ini();
-  
-
-  int lin = 4;
-  int col = 4;
-
 
     tela_limpa();
-    desenha_pilha_aberta(lin, col, &jogo.pilha_principal[6]);
+   
+    inicializa_desenho_pilhas(&jogo);
 
     printf("\n\n\n\n\n\n\n\n");
+    printf("\n\n\n\n\n\n\n\n");
+    
+    printf("%d  %d", jogo.pilha_principal[0].n_cartas, jogo.pilha_principal[0].n_cartas_fechadas);
+  
 
 }
   
@@ -183,7 +187,7 @@ void embaralha_cartas(pilha_t *baralho)
   carta_t reserva;
   int pos1;
   int pos2;
-  for (int i = 0; i < 300; i++)
+  for (int i = 0; i < 450; i++)
   {
     pos1 = aleatorio(0,51);
     pos2 = aleatorio(0,51);
@@ -349,11 +353,11 @@ void inicializa_jogo(jogo_t *jogo)
     }
 
   gera_baralho(&jogo->monte);
-  fecha_cartas_pilha(&jogo->monte);
   embaralha_cartas(&jogo->monte);
   empilha_carta(jogo->monte.cartas[total_cartas_pilha(&jogo->monte) - 1], &jogo->pilha_principal[0]);
   empilha_varias_cartas(2, &jogo->pilha_principal[1], &jogo->monte);
   empilha_varias_cartas(7, &jogo->pilha_principal[6], &jogo->monte);
+  fecha_cartas_pilha(&jogo->monte);
   fecha_cartas_pilha(&jogo->pilha_principal[0]);
   fecha_cartas_pilha(&jogo->pilha_principal[1]);
   fecha_cartas_pilha(&jogo->pilha_principal[6]);
@@ -658,8 +662,7 @@ void desenha_pilha_aberta(int lin, int col, pilha_t *pilha)
   int pos_carta = 0;
 
   for (int i = 0; i < total_cartas_pilha(pilha); i++) {
-    retorna_carta(pilha, i, &esta_aberta);
-    if(esta_aberta) {
+    if(i >= total_cartas_fechadas(pilha)) {
       desenha_carta_aberta(lin+pos_carta, col, retorna_carta(pilha, i, &esta_aberta));
     } else {
         desenha_carta_fechada(lin+pos_carta, col);
@@ -668,3 +671,56 @@ void desenha_pilha_aberta(int lin, int col, pilha_t *pilha)
   }
 }
 
+void inicializa_coordenadas(jogo_t *jogo) {
+  int saida = 35;
+  int principal = 5;
+  for (int i = 0; i < 2; i++) {
+    jogo->coordenadas_monte[0][i] = 5;
+  }
+
+  for (int i = 0; i < 2; i++) {
+    if (i == 0) {
+      jogo->coordenadas_monte[1][i] = 5;
+    } else {
+      jogo->coordenadas_monte[1][i] = 16;
+    }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    jogo->coordenadas_saida[i][0] = 5;
+  }
+
+  for (int i = 0; i < 4; i++) {
+    jogo->coordenadas_saida[i][1] = saida;
+    saida += 10;
+  }
+
+  for (int i = 0; i < 7; i++) {
+    jogo->coordenadas_principal[i][0] = 16;
+  }
+
+  for (int i = 0; i < 7; i++) {
+    jogo->coordenadas_principal[i][1] = principal;
+    principal += 10;
+  }
+}
+
+void inicializa_desenho_pilhas(jogo_t *jogo)
+{
+  desenha_pilha_fechada(jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0], &jogo->monte);
+
+  desenha_local(jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
+
+  desenha_local(jogo->coordenadas_saida[0][0], jogo->coordenadas_saida[0][1]);
+  desenha_local(jogo->coordenadas_saida[1][0], jogo->coordenadas_saida[1][1]);
+  desenha_local(jogo->coordenadas_saida[2][0], jogo->coordenadas_saida[2][1]);
+  desenha_local(jogo->coordenadas_saida[3][0], jogo->coordenadas_saida[3][1]);
+
+  desenha_pilha_aberta(jogo->coordenadas_principal[0][0], jogo->coordenadas_principal[0][1], &jogo->pilha_principal[0]);
+  desenha_pilha_aberta(jogo->coordenadas_principal[1][0], jogo->coordenadas_principal[1][1], &jogo->pilha_principal[1]);
+  desenha_pilha_fechada(jogo->coordenadas_principal[2][0], jogo->coordenadas_principal[2][1], &jogo->pilha_principal[2]);
+  desenha_pilha_fechada(jogo->coordenadas_principal[3][0], jogo->coordenadas_principal[3][1], &jogo->pilha_principal[3]);
+  desenha_pilha_fechada(jogo->coordenadas_principal[4][0], jogo->coordenadas_principal[4][1], &jogo->pilha_principal[4]);
+  desenha_pilha_fechada(jogo->coordenadas_principal[5][0], jogo->coordenadas_principal[5][1], &jogo->pilha_principal[5]);
+  desenha_pilha_aberta(jogo->coordenadas_principal[6][0], jogo->coordenadas_principal[6][1], &jogo->pilha_principal[6]);
+}
