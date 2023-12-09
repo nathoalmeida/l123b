@@ -8,6 +8,8 @@
 #include "tela.h"
 #include "tecla.h"
 
+#define MAX_CHAR_CMD 2
+
 typedef enum { ouro, copas, espadas, paus } naipe_t;
 typedef enum { as = 1, valete = 11, dama, rei } valor_t;
 typedef enum { vermelho, preto } cor_t;
@@ -35,6 +37,8 @@ typedef struct
   int coordenadas_saida[4][2];
   int coordenadas_principal[7][2];
   float pontos;
+  char comando[MAX_CHAR_CMD + 1];
+  bool ultimo_comando_ok;
 } jogo_t;
 
 // PARTE 1 - FUNÇÕES AUXILIARES
@@ -114,6 +118,8 @@ bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destin
 bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino);
 // recebe uma string e seleciona uma função que realiza uma jogada
 bool faz_uma_jogada(jogo_t *jogo, char *jogada);
+// retorna o caso da primeira string para fazer uma jogada
+int faz_uma_jogada_aux(jogo_t *jogo, char *jogada);
 
 // PARTE 4.1 - FUNÇÕES AUXILIARES DE DESENHO
 // desenha a borda de um local vazio ou carta
@@ -137,37 +143,35 @@ void desenha_pilha_aberta(int lin, int col, pilha_t *pilha);
 void inicializa_coordenadas(jogo_t *jogo);
 // desenho inicial das pilhas
 void inicializa_desenho_pilhas(jogo_t *jogo);
+// desenho auxiliar das pilhas (muda o desenho se a pilha está vazia, fechada ou aberta)
+void desenho_pilhas_aux(jogo_t *jogo, pilha_t *pilha, int lin, int col);
 // desenhos extras
 void desenho_extra(jogo_t *jogo);
+// faz o desenho total da tela
+void desenha_tela(jogo_t *jogo);
 
+// PARTE 7 - PROCESSAMENTO DE ENTRADA
+void processa_entrada_pelo_teclado(jogo_t *jogo);
 
 int main() 
 {
   srand(time(0));
   jogo_t jogo;
   inicializa_jogo(&jogo);
-  char tipo_carta[10];
-  carta_t carta = { 2, ouro};
-  carta_t carta2 = { as, paus};
-  carta_t carta3 = { 10, copas};
-  int n_pilha = 0;
-  int pos_cartas = 0;
-  
-  inicializa_coordenadas(&jogo);
 
   tela_ini();
 
+  while(!jogador_ganhou(&jogo)) {
     tela_limpa();
 
-    desenho_extra(&jogo);
-   
-    inicializa_desenho_pilhas(&jogo);
+    desenha_tela(&jogo);
+    processa_entrada_pelo_teclado(&jogo);
 
-    printf("\n\n\n\n\n\n\n\n");
-    printf("\n\n\n\n\n\n\n\n");
-    
-    
-  
+    tela_atualiza();
+  }
+
+   tela_fim();
+   tecla_fim(); 
 
 }
   
@@ -524,34 +528,62 @@ bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino)
 
 bool faz_uma_jogada(jogo_t *jogo, char *jogada)
 {
-  // OLHA SÓ O PRIMEIRO CHAR, DEPOIS CHAMA A FUNÇÃO AUXILIAR COM O SEGUNDO CHAR 
-  /* switch (jogada[0])
+  int num_jogada = faz_uma_jogada_aux(jogo, jogada);
+
+  switch (num_jogada)
   {
-  case 'm': 
-    if (jogada[1] == NULL || jogada[1] == 'p') {
-      return abre_carta_monte(&jogo);
-    } else return false;
-  break;
-  case 'p': 
-    if (jogada[1] == NULL || jogada[1] == 'm') {
-      return recicla_descarte(&jogo);
-    } else if (jogada[1] >= 'a' && jogada[1] <= 'd') {
-        return move_descarte_para_saida(&jogo, jogada[1] - 'a');
-    } else if (jogada[1] >= '1' && jogada[1] <= '7') {
-        return move_descarte_para_principal(&jogo, jogada[1] - '1');
-    } else return false;
-  break;
-  case 'a': break; 
-  default:
+  case -1: return false; 
     break;
-  } */
+  case 0: 
+    if (jogada[1] == 'm' || jogada[1] == '\0') {
+      return abre_carta_monte(jogo);
+    } else if (jogada[1] >= 'a' && jogada[1] <= 'd') {
+        return move_descarte_para_saida(jogo, jogada[1] - 'a');
+    } else if (jogada[1] >= '1' && jogada[1] <= '7') {
+        return move_descarte_para_principal(jogo, jogada[1] - '1'); 
+    } else return false;
+    break;
+  case 1:
+    if (jogada[1] == 'p' || jogada[1] == '\0') {
+      return recicla_descarte(jogo);
+    } else return false;
+    break;
+  case 2: 
+    if (jogada[1] >= 'a' && jogada[1] <= 'd') {
+      return move_principal_para_saida(jogo, jogada[0] - '1', jogada[0] - 'a');
+    } else if (jogada[1] >= '1' && jogada[1] <= '7') {
+      return move_varias_cartas(jogo, jogada[0] - '1', jogada[1] - '1');
+    } else return false;
+    break;
+  case 3:
+    if (jogada[1] >= '1' && jogada[1] <= '7') {
+      return move_saida_para_principal(jogo, jogada[0] - 'a', jogada[1] - '1');
+    } else return false;
+    break;
+  default: return false;
+    break;
+  }
 
   return true;
 }
 
-bool faz_uma_jogada_aux(jogo_t *jogo, char *jogada)
+int faz_uma_jogada_aux(jogo_t *jogo, char *jogada)
 {
-  return true;
+  int num_jogada;
+  
+  if (jogada[0] == 'p') {
+    num_jogada = 0;
+  } else if (jogada[0] == 'm') {
+    num_jogada = 1;
+  } else if (jogada[0] >= '1' && jogada[0] <= '7') {
+    num_jogada = 2;
+  } else if (jogada[0] >= 'a' && jogada[0] <= 'd') {
+    num_jogada = 3;
+  } else {
+    num_jogada = -1;
+  }
+
+  return num_jogada;
 }
 
 void borda_retangulo(int li, int ci, int nl, int nc)
@@ -713,34 +745,85 @@ void inicializa_coordenadas(jogo_t *jogo) {
 
 void inicializa_desenho_pilhas(jogo_t *jogo)
 {
-  desenha_pilha_fechada(jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0], &jogo->monte);
+  // desenha monte
+  desenho_pilhas_aux(jogo, &jogo->monte, jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0]);
+  //desenha_pilha_fechada(jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0], &jogo->monte);
+  // desenha descarte
+  desenho_pilhas_aux(jogo, &jogo->descarte, jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
+  
+  // desenha pilhas de saida
+  for (int i = 0; i < 4; i++) {
+    desenho_pilhas_aux(jogo, &jogo->pilha_saida[i], jogo->coordenadas_saida[i][0], jogo->coordenadas_saida[i][1]);
+  }
+  
+  // desenha pilhas de jogo
+  for (int i = 0; i < 7; i++) {
+    desenho_pilhas_aux(jogo, &jogo->pilha_principal[i], jogo->coordenadas_principal[i][0], jogo->coordenadas_principal[i][1]);
+  }
+}
 
-  desenha_local(jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
-
-  desenha_local(jogo->coordenadas_saida[0][0], jogo->coordenadas_saida[0][1]);
-  desenha_local(jogo->coordenadas_saida[1][0], jogo->coordenadas_saida[1][1]);
-  desenha_local(jogo->coordenadas_saida[2][0], jogo->coordenadas_saida[2][1]);
-  desenha_local(jogo->coordenadas_saida[3][0], jogo->coordenadas_saida[3][1]);
-
-  desenha_pilha_aberta(jogo->coordenadas_principal[0][0], jogo->coordenadas_principal[0][1], &jogo->pilha_principal[0]);
-  desenha_pilha_aberta(jogo->coordenadas_principal[1][0], jogo->coordenadas_principal[1][1], &jogo->pilha_principal[1]);
-  desenha_pilha_fechada(jogo->coordenadas_principal[2][0], jogo->coordenadas_principal[2][1], &jogo->pilha_principal[2]);
-  desenha_pilha_fechada(jogo->coordenadas_principal[3][0], jogo->coordenadas_principal[3][1], &jogo->pilha_principal[3]);
-  desenha_pilha_fechada(jogo->coordenadas_principal[4][0], jogo->coordenadas_principal[4][1], &jogo->pilha_principal[4]);
-  desenha_pilha_fechada(jogo->coordenadas_principal[5][0], jogo->coordenadas_principal[5][1], &jogo->pilha_principal[5]);
-  desenha_pilha_aberta(jogo->coordenadas_principal[6][0], jogo->coordenadas_principal[6][1], &jogo->pilha_principal[6]);
+void desenho_pilhas_aux(jogo_t *jogo, pilha_t *pilha, int lin, int col) {
+  if (esta_vazia(pilha)) {
+    desenha_local(lin, col);
+  } else if (!(esta_vazia(pilha)) && pilha->n_cartas == pilha->n_cartas_fechadas) {
+      desenha_pilha_fechada(lin, col, pilha);
+  } else {
+      desenha_pilha_aberta(lin, col, pilha);
+  }
 }
 
 void desenho_extra(jogo_t *jogo)
 {
   char aviso[30];
   tela_lincol(45, 5);
+  bool jogada_concluida = jogo->ultimo_comando_ok;
+  sprintf(aviso, "%s", "faça uma jogada");
 
-  //sprintf(aviso, "%s", "\u274c  jogada inválida");
-  //sprintf(aviso, "%s", "\u274c  jogada inválida");
-  sprintf(aviso, "%s", "\u2705  jogada realizada");
+  if(jogada_concluida) {
+    sprintf(aviso, "%s", "\u2705  jogada realizada");
+  } else {
+    sprintf(aviso, "%s", "\u274c  jogada inválida");
+  }
+
   printf("%s", aviso);
 
   tela_lincol(45, 50);
   printf("PONTOS: %f", jogo->pontos);
+}
+
+void processa_entrada_pelo_teclado(jogo_t *jogo)
+{
+  char tecla;
+
+  tecla = tecla_le_char(); // ou tela_tecla();
+  if (tecla == '\0') return;
+
+  int nchar = strlen(jogo->comando);
+
+  switch (tecla) {
+    case '\b':
+      if (nchar > 0) {
+        jogo->comando[--nchar] = '\0';
+      }
+      break;
+    case '\n':
+      if (nchar > 0) {
+        jogo->ultimo_comando_ok = faz_uma_jogada(jogo, jogo->comando);
+        jogo->comando[0] = '\0';
+      }
+      break;
+    default:
+      if (nchar < MAX_CHAR_CMD) {
+        jogo->comando[nchar++] = tecla;
+        jogo->comando[nchar] = '\0';
+      }
+      break;
+  }
+}
+
+void desenha_tela(jogo_t *jogo) {
+  inicializa_coordenadas(jogo);
+  inicializa_desenho_pilhas(jogo);
+  desenho_extra(jogo);
+  tela_atualiza();
 }
