@@ -769,7 +769,9 @@ void inicializa_desenho_pilhas(jogo_t *jogo)
   
   // desenha pilhas de jogo
   for (int i = 0; i < 7; i++) {
-    //if(total_cartas_pilha(&jogo->pilha_principal[i]) == total_cartas_fechadas(&jogo->pilha_principal[i]))
+    if(total_cartas_pilha(&jogo->pilha_principal[i]) == total_cartas_fechadas(&jogo->pilha_principal[i])) {
+      abre_carta_topo(&jogo->pilha_principal[i]);
+    }
     desenho_pilhas_aux(jogo, &jogo->pilha_principal[i], jogo->coordenadas_principal[i][0], jogo->coordenadas_principal[i][1]);
   }
 }
