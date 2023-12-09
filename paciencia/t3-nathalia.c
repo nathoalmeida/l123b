@@ -366,7 +366,8 @@ void inicializa_jogo(jogo_t *jogo)
 
   gera_baralho(&jogo->monte);
   embaralha_cartas(&jogo->monte);
-  empilha_carta(jogo->monte.cartas[total_cartas_pilha(&jogo->monte) - 1], &jogo->pilha_principal[0]);
+  // empilha_carta(jogo->monte.cartas[total_cartas_pilha(&jogo->monte) - 1], &jogo->pilha_principal[0]);
+  empilha_varias_cartas(1, &jogo->pilha_principal[0], &jogo->monte);
   empilha_varias_cartas(2, &jogo->pilha_principal[1], &jogo->monte);
   empilha_varias_cartas(7, &jogo->pilha_principal[6], &jogo->monte);
   fecha_cartas_pilha(&jogo->monte);
@@ -764,7 +765,12 @@ void inicializa_desenho_pilhas(jogo_t *jogo)
   
   // desenha pilhas de saida
   for (int i = 0; i < 4; i++) {
-    desenho_pilhas_aux(jogo, &jogo->pilha_saida[i], jogo->coordenadas_saida[i][0], jogo->coordenadas_saida[i][1]);
+    if (esta_vazia(&jogo->pilha_saida[i])) {
+    desenha_local(jogo->coordenadas_saida[i][0], jogo->coordenadas_saida[i][1]);
+  } else {
+    desenha_carta_aberta(jogo->coordenadas_saida[i][0], jogo->coordenadas_saida[i][1], retorna_carta_topo(&jogo->pilha_saida[i]));
+  }
+    //desenho_pilhas_aux(jogo, &jogo->pilha_saida[i], jogo->coordenadas_saida[i][0], jogo->coordenadas_saida[i][1]);
   }
   
   // desenha pilhas de jogo
@@ -789,6 +795,10 @@ void desenho_pilhas_aux(jogo_t *jogo, pilha_t *pilha, int lin, int col) {
 void desenho_extra(jogo_t *jogo)
 {
   char aviso[30];
+  tela_lincol(4, 5);
+  printf("m");
+  tela_lincol(4, 16);
+  printf("p");
   tela_lincol(45, 5);
   bool jogada_concluida = jogo->ultimo_comando_ok;
   sprintf(aviso, "%s", "faça uma jogada");
@@ -802,7 +812,8 @@ void desenho_extra(jogo_t *jogo)
   printf("%s", aviso); 
 
   tela_lincol(45, 50);
-  printf("PONTOS: %f", jogo->pontos);
+  printf("PONTOS: %f\n", jogo->pontos);
+  tela_lincol(47, 5);
 }
 
 void processa_entrada_pelo_teclado(jogo_t *jogo)
