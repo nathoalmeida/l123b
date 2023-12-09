@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tela.h"
+#include "tecla.h"
 
 typedef enum { ouro, copas, espadas, paus } naipe_t;
 typedef enum { as = 1, valete = 11, dama, rei } valor_t;
@@ -136,6 +137,8 @@ void desenha_pilha_aberta(int lin, int col, pilha_t *pilha);
 void inicializa_coordenadas(jogo_t *jogo);
 // desenho inicial das pilhas
 void inicializa_desenho_pilhas(jogo_t *jogo);
+// desenhos extras
+void desenho_extra(jogo_t *jogo);
 
 
 int main() 
@@ -155,13 +158,15 @@ int main()
   tela_ini();
 
     tela_limpa();
+
+    desenho_extra(&jogo);
    
     inicializa_desenho_pilhas(&jogo);
 
     printf("\n\n\n\n\n\n\n\n");
     printf("\n\n\n\n\n\n\n\n");
     
-    printf("%d  %d", jogo.pilha_principal[0].n_cartas, jogo.pilha_principal[0].n_cartas_fechadas);
+    
   
 
 }
@@ -364,6 +369,7 @@ void inicializa_jogo(jogo_t *jogo)
   abre_carta_topo(&jogo->pilha_principal[0]);
   abre_carta_topo(&jogo->pilha_principal[1]);
   abre_carta_topo(&jogo->pilha_principal[6]); 
+  jogo->pontos = 0;
 }
 
 bool pode_mover_p_saida(jogo_t *jogo, int n_pilha, carta_t carta)
@@ -723,4 +729,18 @@ void inicializa_desenho_pilhas(jogo_t *jogo)
   desenha_pilha_fechada(jogo->coordenadas_principal[4][0], jogo->coordenadas_principal[4][1], &jogo->pilha_principal[4]);
   desenha_pilha_fechada(jogo->coordenadas_principal[5][0], jogo->coordenadas_principal[5][1], &jogo->pilha_principal[5]);
   desenha_pilha_aberta(jogo->coordenadas_principal[6][0], jogo->coordenadas_principal[6][1], &jogo->pilha_principal[6]);
+}
+
+void desenho_extra(jogo_t *jogo)
+{
+  char aviso[30];
+  tela_lincol(45, 5);
+
+  //sprintf(aviso, "%s", "\u274c  jogada inválida");
+  //sprintf(aviso, "%s", "\u274c  jogada inválida");
+  sprintf(aviso, "%s", "\u2705  jogada realizada");
+  printf("%s", aviso);
+
+  tela_lincol(45, 50);
+  printf("PONTOS: %f", jogo->pontos);
 }
