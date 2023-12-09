@@ -219,14 +219,14 @@ bool esta_cheia(pilha_t *p)
 
 void empilha_carta(carta_t carta, pilha_t *pilha)
 {
-  if (esta_vazia(pilha) /*|| pilha->n_cartas != pilha->n_cartas_fechadas */) {
+ // if (esta_vazia(pilha) /*|| pilha->n_cartas != pilha->n_cartas_fechadas */) {
     pilha->cartas[pilha->n_cartas] = carta;
     pilha->n_cartas++;
-  } else {
+ /* } else {
       pilha->cartas[pilha->n_cartas] = carta;
       pilha->n_cartas++;
       pilha->n_cartas_fechadas++;
-    }
+    } */
 }
 
 carta_t retorna_carta_topo(pilha_t *pilha)
@@ -250,14 +250,15 @@ void fecha_cartas_pilha(pilha_t *pilha)
 void esvazia_pilha(pilha_t *pilha)
 {
   pilha->n_cartas = 0;
+  pilha->n_cartas_fechadas = 0;
 }
 
 void empilha_varias_cartas(int num_cartas_movidas, pilha_t *destino, pilha_t *origem) 
 {
   assert(destino->n_cartas + num_cartas_movidas <= 52);
   assert(origem->n_cartas >= num_cartas_movidas);
-  
-    for (int i = 0; i < num_cartas_movidas; i++) {
+
+  for (int i = 0; i < num_cartas_movidas; i++) {
       empilha_carta(origem->cartas[origem->n_cartas - i - 1], destino);
     }
 
@@ -424,6 +425,7 @@ bool abre_carta_monte(jogo_t *jogo)
 {
   if (!esta_vazia(&jogo->monte)) {
     empilha_carta(retira_carta_topo(&jogo->monte), &jogo->descarte);
+    jogo->monte.n_cartas_fechadas--;
     return true;
   } else {
     return false;
@@ -507,7 +509,7 @@ bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destin
 bool move_varias_cartas(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino)
 {
   int n_cartas = 0;
-  int pos_cartas = total_cartas_abertas(&jogo->pilha_principal[n_pilha_origem]) - total_cartas_fechadas(&jogo->pilha_principal[n_pilha_origem]);
+  int pos_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - total_cartas_abertas(&jogo->pilha_principal[n_pilha_origem]);
   bool moveu_cartas = false;
 
   for (int i = pos_cartas; i < total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]); i++) {
@@ -535,22 +537,22 @@ bool faz_uma_jogada(jogo_t *jogo, char *jogada)
   case -1: return false; 
     break;
   case 0: 
+    if (jogada[1] == 'p' || jogada[1] == '\0') {
+        return abre_carta_monte(jogo);
+    } else return false;
+      break;
+  case 1:
     if (jogada[1] == 'm' || jogada[1] == '\0') {
-      return abre_carta_monte(jogo);
+      return recicla_descarte(jogo);
     } else if (jogada[1] >= 'a' && jogada[1] <= 'd') {
         return move_descarte_para_saida(jogo, jogada[1] - 'a');
     } else if (jogada[1] >= '1' && jogada[1] <= '7') {
         return move_descarte_para_principal(jogo, jogada[1] - '1'); 
     } else return false;
     break;
-  case 1:
-    if (jogada[1] == 'p' || jogada[1] == '\0') {
-      return recicla_descarte(jogo);
-    } else return false;
-    break;
   case 2: 
     if (jogada[1] >= 'a' && jogada[1] <= 'd') {
-      return move_principal_para_saida(jogo, jogada[0] - '1', jogada[0] - 'a');
+      return move_principal_para_saida(jogo, jogada[0] - '1', jogada[1] - 'a');
     } else if (jogada[1] >= '1' && jogada[1] <= '7') {
       return move_varias_cartas(jogo, jogada[0] - '1', jogada[1] - '1');
     } else return false;
@@ -571,9 +573,9 @@ int faz_uma_jogada_aux(jogo_t *jogo, char *jogada)
 {
   int num_jogada;
   
-  if (jogada[0] == 'p') {
+  if (jogada[0] == 'm') {
     num_jogada = 0;
-  } else if (jogada[0] == 'm') {
+  } else if (jogada[0] == 'p') {
     num_jogada = 1;
   } else if (jogada[0] >= '1' && jogada[0] <= '7') {
     num_jogada = 2;
@@ -785,7 +787,7 @@ void desenho_extra(jogo_t *jogo)
     sprintf(aviso, "%s", "\u274c  jogada inválida");
   }
 
-  printf("%s", aviso);
+  printf("%s", aviso); 
 
   tela_lincol(45, 50);
   printf("PONTOS: %f", jogo->pontos);
