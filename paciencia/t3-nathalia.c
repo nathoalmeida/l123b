@@ -821,8 +821,8 @@ void desenho_extra(jogo_t *jogo)
   printf("Digite a pilha de origem, seguida da pilha de destino e pressione ENTER:");
 
   tela_lincol(47, 5);
-  bool jogada_concluida = jogo->ultimo_comando_ok;
   sprintf(aviso, "%s", "faça uma jogada");
+  bool jogada_concluida = jogo->ultimo_comando_ok;
 
   if(jogada_concluida) {
     sprintf(aviso, "%s", "\u2705  jogada realizada");
