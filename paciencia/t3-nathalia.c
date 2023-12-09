@@ -257,9 +257,11 @@ void empilha_varias_cartas(int num_cartas_movidas, pilha_t *destino, pilha_t *or
 {
   assert(destino->n_cartas + num_cartas_movidas <= 52);
   assert(origem->n_cartas >= num_cartas_movidas);
-
-  for (int i = 0; i < num_cartas_movidas; i++) {
-      empilha_carta(origem->cartas[origem->n_cartas - i - 1], destino);
+  
+  int pos_cartas = origem->n_cartas - num_cartas_movidas;
+  
+  for (int i = pos_cartas; i < total_cartas_pilha(origem); i++) {
+      empilha_carta(origem->cartas[i], destino);
     }
 
   // destino->n_cartas = destino->n_cartas + num_cartas_movidas;
@@ -498,10 +500,12 @@ bool move_saida_para_principal(jogo_t *jogo, int n_pilha_saida, int n_pilha_prin
 bool move_varias_cartas_aux(jogo_t *jogo, int n_pilha_origem, int n_pilha_destino, int n_cartas_movidas) {
   assert(total_cartas_pilha(&jogo->pilha_principal[n_pilha_destino]) + n_cartas_movidas <= 52);
 
-  int pos_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - n_cartas_movidas;
-  for (int i = pos_cartas; i <= n_cartas_movidas; i++) {
+  // int pos_cartas = total_cartas_pilha(&jogo->pilha_principal[n_pilha_origem]) - n_cartas_movidas;
+  empilha_varias_cartas(n_cartas_movidas, &jogo->pilha_principal[n_pilha_destino], &jogo->pilha_principal[n_pilha_origem]);
+  /* for (int i = pos_cartas; i <= n_cartas_movidas; i++) {
     empilha_carta(jogo->pilha_principal[n_pilha_origem].cartas[i], &jogo->pilha_principal[n_pilha_destino]);
-  }
+
+  } */
   
  return true;
 }
@@ -751,7 +755,12 @@ void inicializa_desenho_pilhas(jogo_t *jogo)
   desenho_pilhas_aux(jogo, &jogo->monte, jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0]);
   //desenha_pilha_fechada(jogo->coordenadas_monte[0][0], jogo->coordenadas_monte[0][0], &jogo->monte);
   // desenha descarte
-  desenho_pilhas_aux(jogo, &jogo->descarte, jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
+  if (esta_vazia(&jogo->descarte)) {
+    desenha_local(jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
+  } else {
+    desenha_carta_aberta(jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1], retorna_carta_topo(&jogo->descarte));
+  }
+  // desenho_pilhas_aux(jogo, &jogo->descarte, jogo->coordenadas_monte[1][0], jogo->coordenadas_monte[1][1]);
   
   // desenha pilhas de saida
   for (int i = 0; i < 4; i++) {
@@ -760,6 +769,7 @@ void inicializa_desenho_pilhas(jogo_t *jogo)
   
   // desenha pilhas de jogo
   for (int i = 0; i < 7; i++) {
+    //if(total_cartas_pilha(&jogo->pilha_principal[i]) == total_cartas_fechadas(&jogo->pilha_principal[i]))
     desenho_pilhas_aux(jogo, &jogo->pilha_principal[i], jogo->coordenadas_principal[i][0], jogo->coordenadas_principal[i][1]);
   }
 }
