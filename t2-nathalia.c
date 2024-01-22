@@ -1,7 +1,7 @@
-// l123b - t2 - partes II e III
+// l123b - t2
 // programa para digitar letras aleatórias dentro de um limite de tempo
 // Nathália Oliveira de Almeida
-// * 2023-xx-xx
+// * 2023-12-10
 
 /// Você só pode alterar o nome e data acima, e os locais marcados,
 ///   no final do arquivo.
@@ -21,7 +21,7 @@
 // tamanho máximo de uma palavra
 #define NUM_LETRAS 16
 // quantos segundos para digitar
-#define TEMPO 180
+#define TEMPO 20
 
 // seleciona uma palavra na matriz, ou retorna -1
 int seleciona_palavra(int t, char v[t][t], char letra);
@@ -61,6 +61,7 @@ void processa_entrada(char matriz[NUM_PALAVRAS][NUM_LETRAS], int *palavra_seleci
 int main()
 {
   tecla_ini();
+  tela_ini();
 
   // inicializa o gerador de números aleatórios
   srand(time(0));
@@ -96,9 +97,14 @@ void jogo()
   // inicializa timer
   double t0 = tela_relogio();
   double tempo_restante = TEMPO - (tela_relogio() - t0);
-
-  desenha_tela(matriz_palavras, palavra_selecionada, palavras_acertadas, tempo_restante);
-  processa_entrada(matriz_palavras, &palavra_selecionada, &palavras_acertadas);
+  
+  while(palavras_acertadas < 10) {
+    desenha_tela(matriz_palavras, palavra_selecionada, palavras_acertadas, tempo_restante);
+    processa_entrada(matriz_palavras, &palavra_selecionada, &palavras_acertadas);
+    double tempo_restante = TEMPO - (tela_relogio() - t0);
+    tela_atualiza();
+  }
+  
 
 }
 
@@ -243,7 +249,7 @@ bool tem_acento(int tam, char v[tam])
 void desenha_tela(char matriz[NUM_PALAVRAS][NUM_LETRAS], int palavra_selecionada, int palavras_acertadas, double tempo_restante)
 {
   tela_limpa();
-  int lin = tela_nlin() / 2 - 1;
+   int lin = tela_nlin() / 2 - 1;
   int col = tela_ncol() / 2 - 26 / 2;
 
   printf("Digite uma palavra:\n");
@@ -257,7 +263,6 @@ void desenha_tela(char matriz[NUM_PALAVRAS][NUM_LETRAS], int palavra_selecionada
   
   imprime_matriz(palavra_selecionada, NUM_PALAVRAS, NUM_LETRAS, matriz);
 
-  tela_lincol(lin + 2, col);
   tela_cor_normal();
   printf("Faltam %d palavras, ", NUM_PALAVRAS - palavras_acertadas);
   if (tempo_restante < 5) {
@@ -281,7 +286,7 @@ void processa_entrada(char matriz[NUM_PALAVRAS][NUM_LETRAS], int *palavra_seleci
   int palavra;
   // se não foi digitado nada, não tem o que fazer
   if (c == '\0') return;
-  // CONSERTAR ESSAS COISAS AQUI
+  
   while (*palavra_selecionada < 0) {
     *palavra_selecionada = seleciona_palavra(NUM_PALAVRAS, matriz, c);
   }
